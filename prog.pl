@@ -1,5 +1,9 @@
 :- ['sentence.pl'].
 
+% TODO: generalized name matching that almost everything will need
+
+%%% Definitions
+
 % a room definition
 % room(RmName,ShortDesc))
 :- dynamic room/2.
@@ -29,7 +33,63 @@
 % verb(VbName,VbWords,VbHelp)
 :- dynamic verb/3.
 
-% functions
+%%% Primary verb actions
+
+% "go" with no target - list all exits in the same room as the player.
+printgo :-
+	% get player's current room
+	location(player,Rm),
+	!,
+	writeln('Go where? From here, you can go:'),
+	getexits(Rm).
+% "go" with a direction - try to take a specified direction as an exit.
+printgo(ExDir) :-
+	location(player,Rm),
+	exit(Rm,Ex,ExDir),
+	room(Ex,ExName),
+	!,
+	retract(location(player,Rm)),
+	assert(location(player,Ex)),
+	format('You are now at ~s. You see:~n', [ExName]),
+	getobjects(Ex).
+% "go" with unknown/unsuccessful exit direction
+printgo(_) :-
+	writeln('You can\'t go that way.').
+
+% "get" with no target - list gettable items in same room as player.
+printget :-
+	location(player,Rm),
+	!,
+	writeln('Get what? You can try to get:'),
+	getobjects(Rm,item).
+% "get" with target - move an item to inventory, if it's in the player's current room.
+printget(ShortName) :-
+	% check that this is the name of an item
+	object(Item,ShortNames,ObjNm,_),
+	name(ShortName,StrItem),
+	member(StrItem,ShortNames),
+	item(Item),
+	% make sure item is in same room as player
+	location(player,Rm),
+	location(Item, Rm),
+	!, % where does this go
+	% move item to inventory
+	retract(location(Item,Rm)),
+	assert(location(Item,inventory)),
+	format('You pick up ~s.', [ObjNm]).
+% "get" with target that isn't an item
+printget(ShortName) :-
+	% check that this is some non-item object
+	object(Obj,ShortNames,ObjNm,_),
+	name(ShortName,StrItem),
+	member(StrItem,ShortNames),
+	location(player,Rm),
+	location(Obj,Rm),
+	!,
+	format('~s isn\'t something you can carry.', [ObjNm]).
+% "get" with unknown target
+printget(ShortName) :-
+	format('There is no ~s here that you can get.',[ShortName]).
 
 % "look" with no target - list all objects in the same room as the player.
 printlook :-
@@ -57,6 +117,16 @@ printlook(ShortName) :-
 printlook(Obj) :-
 	format('You can\'t see any ~s.', [Obj]).
 
+% "inventory" - list all items in your inventory.
+printinv :-
+	% player has at least one item
+	location(_,inventory),
+	!,
+	writeln('You are carrying:'),
+	getobjects(inventory).
+printinv :-
+	writeln('You are not carrying anything.').
+
 % "help" with no target - general help/commands
 printhelp :-
 	format('Here are commands you can use. Type "help <command>" for more on a command.~n'),
@@ -75,10 +145,27 @@ printhelp(Vb) :-
 printhelp(_) :-
 	writeln('I don\'t know that command.').
 
+%%% Helper Predicates
+
+% List all available exits from the specified room.
+getexits(Rm) :-
+	exit(Rm,Ex,ExDir),
+	room(Ex,ExDesc),
+	format('* ~s to ~s',[ExDir,ExDesc]).
+
 % List all objects in a room.
 getobjects(Rm) :-
 	object(Obj,_,ObjName,_),
 	location(Obj,Rm),
+	format('* ~s~n',[ObjName]),
+	fail.
+
+% ... of a particular type (e.g. item).
+getobjects(Rm,Type) :-
+	object(Obj,_,ObjName,_),
+	location(Obj,Rm),
+	% "Type(Obj)"
+	call(Type,Obj),
 	format('* ~s~n',[ObjName]),
 	fail.
 
@@ -97,35 +184,58 @@ printlist([H|T]) :-
 % an example
 
 room(streetCorner, "a street corner").
+room(office, "a dingy office").
 
-object(player,["you","yourself","me","myself","self"], "you", "You turn your gaze inward and do a little soul searching.").
-object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],
-"a street lamp", "An old-timey street lamp, little more than a wrought-iron lantern on a post. The light flickers a little.").
-object(jacketMan,["man"],
-"a man in a black jacket","A shady-looking guy wearing a black leather jacket and dark sunglasses. Because you can't tell where he's looking, you can't help but feel like he's watching you.").
-object(paperFolded,["paper"],
-"a folded scrap of paper", "A tattered piece of paper. It is hastily folded up, but there seems to be writing on it.").
-object(paperUnfolded,["paper"],
-"a scrap of paper", "A tattered piece of paper. It reads, \"the quick brown fox.\"").
+object(player,["you","yourself","me","myself","self"], "you",
+"You turn your gaze inward and do a little soul searching.").
+object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],"a street lamp",
+"An old-timey street lamp, little more than a wrought-iron lantern on a post. The light flickers a little.").
+object(jacketMan,["man"],"a man in a black jacket",
+"A shady-looking guy wearing a black leather jacket and dark sunglasses. Because you can't tell where he's looking, you can't help but feel like he's watching you.").
+object(paperFolded,["paper"],"a folded scrap of paper",
+"A tattered piece of paper. It is hastily folded up, but there seems to be writing on it.").
+object(paperUnfolded,["paper"],"a scrap of paper",
+"A tattered piece of paper. It reads, \"the quick brown fox.\"").
+object(statue,["statue","sculpture"],"a marble statue",
+"A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
 
 item(paperFolded).
 item(paperUnfolded).
+
+talker(player).
+talker(jacketMan).
 
 location(player,streetCorner).
 location(streetlamp,streetCorner).
 location(jacketMan,streetCorner).
 location(paperFolded,streetCorner).
+location(statue,office).
 
 exit(streetCorner,bealeSt,east).
 exit(streetCorner,parkAve,south).
 exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
+exit(office,streetCorner,out).
 
-verb(go,["go","walk","g"],"Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
-verb(get,["get","pick up","take"],"Pick something up. Use without a target to see everything you can pick up.").
-verb(look,["look","look at","examine","describe","l"],"Examine something in more detail. Use without a target to size up everything in the area.").
-verb(talk,["talk","speak","talk to","speak to","t"],"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
-verb(inventory,["inventory","items","i"],"See what items you are carrying.").
-verb(help,["help","?"],"Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
+verb(go,["go","walk","g"],
+"Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
+verb(get,["get","pick up","take"],
+"Pick something up. Use without a target to see everything you can pick up.").
+verb(drop,["drop","put down"],
+"Put something down.").
+verb(wear,["wear","equip","put on"],
+"Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
+verb(remove,["remove","take off","unwear"],
+"Remove an article you are wearing. Use without a target to see everything you are wearing.").
+verb(look,["look","look at","examine","describe","l"],
+"Examine something in more detail. Use without a target to size up everything in the area.").
+verb(talk,["talk","speak","talk to","speak to","t"],
+"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
+verb(wait,["wait","z"],
+"Do nothing for a moment. Use with a number to wait for that many moments.").
+verb(inventory,["inventory","items","i"],
+"See what items you are carrying.").
+verb(help,["help","?"],
+"Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 
 % vim:ft=prolog
