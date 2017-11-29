@@ -26,7 +26,7 @@
 :- dynamic talker/1.
 
 % a verb the player can use and words that invoke it
-% verb(VbName,VbHelp,VbWords)
+% verb(VbName,VbWords,VbHelp)
 :- dynamic verb/3.
 
 % functions
@@ -43,13 +43,15 @@ printlook :-
 printlook :-
 	writeln('You can\'t see anything.').
 % "look" with target - Print an object's short name and description.
-% TODO: adapt to match alternate object names
-printlook(Obj) :-
+printlook(ShortName) :-
+	% check all alternate object names
+	object(Obj,ShortNames,ObjNm,ObjDesc),
+	name(ShortName,StrObj),
+	member(StrObj,ShortNames),
 	% make sure object is in same room as player
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
-	object(Obj,_,ObjNm,ObjDesc),
 	format('This is ~s.~n~s', [ObjNm, ObjDesc]).
 % "look" with unknown target or target not in room
 printlook(Obj) :-
@@ -61,13 +63,14 @@ printhelp :-
 	getverbs.
 % "help" with target - get help on a verb
 printhelp(Vb) :-
-	verb(_,VbHelp,VbNames),
 	% check all alternate verb names for a match
+	verb(_,VbNames,VbHelp),
 	name(Vb,StrVb),
 	member(StrVb,VbNames),
+	!,
 	% list help text and alternate verb names
 	format('~s~nTo use this command, you can type:~n', [VbHelp]),
-	printlist(VbNames), !.
+	printlist(VbNames).
 % "help" with unknown target
 printhelp(_) :-
 	writeln('I don\'t know that command.').
@@ -81,7 +84,7 @@ getobjects(Rm) :-
 
 % List all verbs.
 getverbs :-
-	verb(_,_,[VbName|_]),
+	verb(_,[VbName|_],_),
 	format('* ~s~n',[VbName]),
 	fail.
 
@@ -95,7 +98,7 @@ printlist([H|T]) :-
 
 room(streetCorner, "a street corner").
 
-object(player,["you"], "you", "").
+object(player,["you","yourself","me","myself","self"], "you", "You turn your gaze inward and do a little soul searching.").
 object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],
 "a street lamp", "An old-timey street lamp, little more than a wrought-iron lantern on a post. The light flickers a little.").
 object(jacketMan,["man"],
@@ -108,6 +111,7 @@ object(paperUnfolded,["paper"],
 item(paperFolded).
 item(paperUnfolded).
 
+location(player,streetCorner).
 location(streetlamp,streetCorner).
 location(jacketMan,streetCorner).
 location(paperFolded,streetCorner).
@@ -117,9 +121,11 @@ exit(streetCorner,parkAve,south).
 exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 
-verb(go,"Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.",["go","walk","g"]).
-verb(get,"Pick something up. Use without a target to see everything you can pick up.",["get","pick up","take"]).
-verb(look,"Examine something in more detail. Use without a target to size up everything in the area.",["look","look at","examine","describe","l"]).
-verb(talk,"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.",["talk","speak","talk to","speak to","t"]).
+verb(go,["go","walk","g"],"Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
+verb(get,["get","pick up","take"],"Pick something up. Use without a target to see everything you can pick up.").
+verb(look,["look","look at","examine","describe","l"],"Examine something in more detail. Use without a target to size up everything in the area.").
+verb(talk,["talk","speak","talk to","speak to","t"],"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
+verb(inventory,["inventory","items","i"],"See what items you are carrying.").
+verb(help,["help","?"],"Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 
 % vim:ft=prolog
