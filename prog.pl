@@ -33,6 +33,10 @@
 % verb(VbName,VbWords,VbHelp)
 :- dynamic verb/3.
 
+% something that ticks once for every turn the player takes.
+% timer(Name,Count)
+:- dynamic timer/2.
+
 %%% Primary verb actions
 
 % "go" with no target - list all exits in the same room as the player.
@@ -91,6 +95,24 @@ printget(ShortName) :-
 printget(ShortName) :-
 	format('There is no ~s here that you can get.',[ShortName]).
 
+% "drop" with no target
+printdrop :-
+	writeln('What will you drop?').
+% "drop" with target - move item from inventory to the room the player is in.
+printdrop(ShortName) :-
+	object(Item,ShortNames,ObjNm,_),
+	name(ShortName,StrItem),
+	member(StrItem,ShortNames),
+	location(Item, inventory),
+	location(player,Rm),
+	!,
+	retract(location(Item,inventory)),
+	assert(location(Item,Rm)),
+	format('You drop ~s.',[ObjNm]).
+% "drop" with target that the player isn't carrying
+printdrop(ShortName) :-
+	format('You aren\'t carrying any ~s.',[ShortName]).
+
 % "look" with no target - list all objects in the same room as the player.
 printlook :-
 	% get player's current room
@@ -116,6 +138,12 @@ printlook(ShortName) :-
 % "look" with unknown target or target not in room
 printlook(Obj) :-
 	format('You can\'t see any ~s.', [Obj]).
+
+% "wait"
+printwait :-
+	printwait(1).
+printwait(Turns) :-
+	writeln('You wait around.').
 
 % "inventory" - list all items in your inventory.
 printinv :-
@@ -181,6 +209,17 @@ printlist([H|T]) :-
 	format('* ~s~n', [H]),
 	printlist(T).
 
+%%% Main parsing stuff
+
+main :-
+	repeat,
+	getsentence(Line),
+	splitline(Line,Vb,Tgt),
+	fail.
+
+splitline(Line,Vb,Tgt) :-
+	append(Vb,Tgt,Line).
+
 % an example
 
 room(streetCorner, "a street corner").
@@ -237,5 +276,7 @@ verb(inventory,["inventory","items","i"],
 "See what items you are carrying.").
 verb(help,["help","?"],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
+
+timer(global,0).
 
 % vim:ft=prolog
