@@ -212,6 +212,11 @@ main :-
 	writeln(Line),
 	fail.
 
+start :-
+	write("Welcome to the best game ever made!"),
+	nl,
+	main.
+
 % an example
 
 room(streetCorner, "a street corner").
@@ -248,26 +253,27 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(office,streetCorner,out).
 
-verb(go,['go','walk','g'],
+verb(printgo,['go','walk','g'],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
-verb(get,['get','pickup','take'],
+verb(printget,['get','pickup','take'],
 "Pick something up. Use without a target to see everything you can pick up.").
-verb(drop,['drop','putdown'],
+verb(printdrop,['drop','putdown'],
 "Put something down.").
-verb(wear,['wear','equip','puton'],
-"Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
-verb(remove,['remove','takeoff','unwear'],
-"Remove an article you are wearing. Use without a target to see everything you are wearing.").
-verb(look,['look','lookat','examine','describe','l'],
-"Examine something in more detail. Use without a target to size up everything in the area.").
-verb(talk,['talk','speak','talkto','speakto','t'],
-"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
-verb(wait,['wait','z'],
-"Do nothing for a moment. Use with a number to wait for that many moments.").
-verb(inventory,['inventory','items','i'],
-"See what items you are carrying.").
-verb(help,['help','?'],
+verb(printhelp,['help','?'],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
+verb(printlook,['look','lookat','examine','describe','l'],
+"Examine something in more detail. Use without a target to size up everything in the area.").
+verb(printwait,['wait','z'],
+"Do nothing for a moment. Use with a number to wait for that many moments.").
+verb(printinv,['inventory','items','i'],
+"See what items you are carrying.").
+%UNIMPLEMENTED
+verb(printwear,['wear','equip','puton'],
+"Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
+verb(printremove,['remove','takeoff','unwear'],
+"Remove an article you are wearing. Use without a target to see everything you are wearing.").
+verb(printtalk,['talk','speak','talkto','speakto','t'],
+"Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
 
 timer(global,0).
 
