@@ -173,7 +173,18 @@ printhelp(Vb) :-
 printhelp(_) :-
 	writeln('I don\'t know that command.').
 
+%Check if the player has once the game
+
 %%% Helper Predicates
+printwin :-
+	location(santaHead,inventory),
+	location(santaLegs,inventory),
+	location(santaArms,inventory),
+	location(santaBody,inventory),
+	location(santaOutfit,inventory),
+	write("Congratulations! Santa has been restored and you have saved Christmas!").
+printwin :-
+	write("You do not have all of the components needed to save Christmas.").
 
 % List all available exits from the specified room.
 getexits(Rm) :-
@@ -232,6 +243,7 @@ splitline(Line,Vb,Tgt) :-
 room(streetCorner, "a street corner").
 room(office, "a dingy office").
 
+
 object(player,["you","yourself","me","myself","self"], "you",
 "You turn your gaze inward and do a little soul searching.").
 object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],"a street lamp",
@@ -245,8 +257,21 @@ object(paperUnfolded,["paper"],"a scrap of paper",
 object(statue,["statue","sculpture"],"a marble statue",
 "A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
 
+%SANTA CLAUS OBJECTS
+object(santaHead,["head","santa's head"], "Santa...does not look well...").
+object(santaLegs,["legs","leg","santa's legs"],"the legs of Santa himself...").
+object(santaArms,["arms","santa's arms","arm"],"Santa needs these to deliver his presents...").
+object(santaBody,["body", "torso", "santa's body", "santa's torso"], "this must be where he keeps his cookies...").
+object(santaOutfit,["coat","santa's coat","santa's pants","pants"],"without his uniform, Santa is just a big jolly creep...").
+object(rudolph,["reindeer","rudolph"],"Rudolph lies on the asphault. He is not breathing.").
+
 item(paperFolded).
 item(paperUnfolded).
+item(santaHead).
+item(santaLegs).
+item(santaArms).
+item(santaBody).
+item(santaOutfit).
 
 talker(player).
 talker(jacketMan).
@@ -273,6 +298,8 @@ verb(printhelp,["help","?"],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 verb(printlook,["look","look at","examine","describe","l"],
 "Examine something in more detail. Use without a target to size up everything in the area.").
+verb(printwin,["rebuild","rebuild santa", "heal santa", "fix santa","restore","fix"],"Once you have collected all of Santa's components, you will win the game!").
+
 %UNIMPLEMENTED
 verb(wear,["wear","equip","put on"],
 "Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
