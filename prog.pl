@@ -213,9 +213,16 @@ printlist([H|T]) :-
 
 main :-
 	repeat,
-	getsentence(Line),
-	splitline(Line,Vb,Tgt),
+	display("Hi"),
+	read(Line),
+	write(Line),
+
 	fail.
+
+start :-
+	write("Welcome to the best game ever made!"),
+	nl,
+	main.
 
 splitline(Line,Vb,Tgt) :-
 	append(Vb,Tgt,Line).
@@ -256,26 +263,28 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(office,streetCorner,out).
 
-verb(go,["go","walk","g"],
+verb(printgo,["go","walk","g"],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
-verb(get,["get","pick up","take"],
+verb(printget,["get","pick up","take"],
 "Pick something up. Use without a target to see everything you can pick up.").
-verb(drop,["drop","put down"],
+verb(printdrop,["drop","put down"],
 "Put something down.").
+verb(printhelp,["help","?"],
+"Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
+verb(printlook,["look","look at","examine","describe","l"],
+"Examine something in more detail. Use without a target to size up everything in the area.").
+%UNIMPLEMENTED
 verb(wear,["wear","equip","put on"],
 "Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
 verb(remove,["remove","take off","unwear"],
 "Remove an article you are wearing. Use without a target to see everything you are wearing.").
-verb(look,["look","look at","examine","describe","l"],
-"Examine something in more detail. Use without a target to size up everything in the area.").
+
 verb(talk,["talk","speak","talk to","speak to","t"],
 "Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
 verb(wait,["wait","z"],
 "Do nothing for a moment. Use with a number to wait for that many moments.").
-verb(inventory,["inventory","items","i"],
+verb(printinv,["inventory","items","i"],
 "See what items you are carrying.").
-verb(help,["help","?"],
-"Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 
 timer(global,0).
 
