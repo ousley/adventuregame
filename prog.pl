@@ -70,8 +70,7 @@ printget :-
 printget(ShortName) :-
 	% check that this is the name of an item
 	object(Item,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	item(Item),
 	% make sure item is in same room as player
 	location(player,Rm),
@@ -85,8 +84,7 @@ printget(ShortName) :-
 printget(ShortName) :-
 	% check that this is some non-item object
 	object(Obj,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
@@ -101,8 +99,7 @@ printdrop :-
 % "drop" with target - move item from inventory to the room the player is in.
 printdrop(ShortName) :-
 	object(Item,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	location(Item, inventory),
 	location(player,Rm),
 	!,
@@ -128,9 +125,8 @@ printlook :-
 printlook(ShortName) :-
 	% check all alternate object names
 	object(Obj,ShortNames,ObjNm,ObjDesc),
-	name(ShortName,StrObj),
-	member(StrObj,ShortNames),
-	% make sure object is in same room as player
+	member(ShortName,ShortNames),
+	% make sure object is in inventory or same room as player
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
@@ -163,8 +159,7 @@ printhelp :-
 printhelp(Vb) :-
 	% check all alternate verb names for a match
 	verb(_,VbNames,VbHelp),
-	name(Vb,StrVb),
-	member(StrVb,VbNames),
+	member(Vb,VbNames),
 	!,
 	% list help text and alternate verb names
 	format('~s~nTo use this command, you can type:~n', [VbHelp]),
@@ -214,28 +209,25 @@ printlist([H|T]) :-
 main :-
 	repeat,
 	getsentence(Line),
-	splitline(Line,Vb,Tgt),
+	writeln(Line),
 	fail.
-
-splitline(Line,Vb,Tgt) :-
-	append(Vb,Tgt,Line).
 
 % an example
 
 room(streetCorner, "a street corner").
 room(office, "a dingy office").
 
-object(player,["you","yourself","me","myself","self"], "you",
+object(player,['you','yourself','me','myself','self'], "you",
 "You turn your gaze inward and do a little soul searching.").
-object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],"a street lamp",
+object(streetlamp,['streetlamp','streetlight','lamp','light','lamppost'],"a street lamp",
 "An old-timey street lamp, little more than a wrought-iron lantern on a post. The light flickers a little.").
-object(jacketMan,["man"],"a man in a black jacket",
+object(jacketMan,['man'],"a man in a black jacket",
 "A shady-looking guy wearing a black leather jacket and dark sunglasses. Because you can't tell where he's looking, you can't help but feel like he's watching you.").
-object(paperFolded,["paper"],"a folded scrap of paper",
+object(paperFolded,['paper'],"a folded scrap of paper",
 "A tattered piece of paper. It is hastily folded up, but there seems to be writing on it.").
-object(paperUnfolded,["paper"],"a scrap of paper",
+object(paperUnfolded,['paper'],"a scrap of paper",
 "A tattered piece of paper. It reads, \"the quick brown fox.\"").
-object(statue,["statue","sculpture"],"a marble statue",
+object(statue,['statue','sculpture'],"a marble statue",
 "A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
 
 item(paperFolded).
@@ -256,25 +248,25 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(office,streetCorner,out).
 
-verb(go,["go","walk","g"],
+verb(go,['go','walk','g'],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
-verb(get,["get","pick up","take"],
+verb(get,['get','pickup','take'],
 "Pick something up. Use without a target to see everything you can pick up.").
-verb(drop,["drop","put down"],
+verb(drop,['drop','putdown'],
 "Put something down.").
-verb(wear,["wear","equip","put on"],
+verb(wear,['wear','equip','puton'],
 "Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
-verb(remove,["remove","take off","unwear"],
+verb(remove,['remove','takeoff','unwear'],
 "Remove an article you are wearing. Use without a target to see everything you are wearing.").
-verb(look,["look","look at","examine","describe","l"],
+verb(look,['look','lookat','examine','describe','l'],
 "Examine something in more detail. Use without a target to size up everything in the area.").
-verb(talk,["talk","speak","talk to","speak to","t"],
+verb(talk,['talk','speak','talkto','speakto','t'],
 "Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
-verb(wait,["wait","z"],
+verb(wait,['wait','z'],
 "Do nothing for a moment. Use with a number to wait for that many moments.").
-verb(inventory,["inventory","items","i"],
+verb(inventory,['inventory','items','i'],
 "See what items you are carrying.").
-verb(help,["help","?"],
+verb(help,['help','?'],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 
 timer(global,0).
