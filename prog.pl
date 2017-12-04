@@ -181,8 +181,8 @@ printwin :-
 	write("Congratulations! Santa has been restored and you have saved Christmas!").
 printwin :-
 	write("You do not have all of the components needed to save Christmas.").
-quit :- running(X),
-	X = true,
+quit :- running(true),
+	write("You quit."),
 	retract(running(true)).
 
 % List all available exits from the specified room.
@@ -224,7 +224,7 @@ printlist([H|T]) :-
 % Main loop - read user input, parse it into a verb and target, run the command.
 main1 :-
 	repeat,
-
+	running(true),
 	getsentence(Line),
 	%writeln(Line),
 	parse(Line),
@@ -265,7 +265,7 @@ start :-
 	assert(running(true)),
 	writeln("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
-	printlook,
+	printlook;
 	main1.
 
 first([X|_], X).
