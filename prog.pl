@@ -261,7 +261,6 @@ tick :-
 
 % The player runs this to start the game, printing introductory stuff and starting the main loop.
 start :-
-<<<<<<< HEAD
 	assert(running(true)),
 	writeln("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
@@ -293,7 +292,7 @@ object(santaHead,['head','santahead'], "Santa...does not look well...").
 object(santaLegs,['legs','leg','santalegs', 'santaleg'],"the legs of Santa himself...").
 object(santaArms,['arms','santaarms','santaarm','arm'],"Santa needs these to deliver his presents...").
 object(santaBody,['body', 'torso', 'santabody', 'santatorso'], "this must be where he keeps his cookies...").
-object(santaOutfit,['coat','santacoat,'pants','santapants'],"without his uniform, Santa is just a big jolly creep...").
+object(santaOutfit,['coat','santacoat','pants','santapants'],"without his uniform, Santa is just a big jolly creep...").
 object(rudolph,['reindeer','rudolph'],"Rudolph lies on the asphault. He is not breathing.").
 
 item(paperFolded).
