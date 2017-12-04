@@ -137,9 +137,8 @@ printlook(Obj) :-
 
 % "wait"
 printwait :-
-	printwait(1).
-printwait(Turns) :-
-	writeln('You wait around.').
+	writeln('You wait around.'),
+	tick.
 
 % "inventory" - list all items in your inventory.
 printinv :-
@@ -206,16 +205,52 @@ printlist([H|T]) :-
 
 %%% Main parsing stuff
 
+% Main loop - read user input, parse it into a verb and target, run the command.
 main :-
 	repeat,
 	getsentence(Line),
-	writeln(Line),
+	%writeln(Line),
+	parse(Line),
 	fail.
 
+% hack to trim leading empty atoms
+parse([H|T]) :-
+	H = '',
+	parse(T).
+parse([LVb|LTgt]) :-
+	writeln(LVb), writeln(LTgt),
+	% try to match a verb
+	verb(Vb,VbNames,_),
+	member(LVb,VbNames),
+	!,
+	first(LTgt,Tgt),
+	buildcall(Vb,Tgt).
+% no verb matches - interpret this as a "go"
+parse([LTgt]) :-
+	printgo(LTgt).
+
+buildcall(Vb,Tgt) :-
+	Tgt = [],
+	!,
+	call(Vb).
+buildcall(Vb,Tgt) :-
+	call(Vb,Tgt).
+
+% Increment all active timers.
+tick :-
+	timer(N,T),
+	Tn is T+1,
+	retract(timer(N,T)),
+	assert(timer(N,Tn)).
+
+% The player runs this to start the game, printing introductory stuff and starting the main loop.
 start :-
-	write("Welcome to the best game ever made!"),
-	nl,
+	writeln('Welcome to the best game ever made!'),
+	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
+	printlook,
 	main.
+
+first([X|_], X).
 
 % an example
 
@@ -264,7 +299,7 @@ verb(printhelp,['help','?'],
 verb(printlook,['look','lookat','examine','describe','l'],
 "Examine something in more detail. Use without a target to size up everything in the area.").
 verb(printwait,['wait','z'],
-"Do nothing for a moment. Use with a number to wait for that many moments.").
+"Do nothing for a moment.").
 verb(printinv,['inventory','items','i'],
 "See what items you are carrying.").
 %UNIMPLEMENTED
