@@ -57,7 +57,8 @@ printgo(ExDir) :-
 	retract(location(player,Rm)),
 	assert(location(player,Ex)),
 	format('You are now at ~s. You see:~n', [ExName]),
-	getobjects(Ex).
+	getobjects(Ex),
+	etick.
 % "go" with unknown/unsuccessful exit direction
 printgo(_) :-
 	writeln('You can\'t go that way.').
@@ -77,11 +78,12 @@ printget(ShortName) :-
 	% make sure item is in same room as player
 	location(player,Rm),
 	location(Item, Rm),
-	!, % where does this go
+	!,
 	% move item to inventory
 	retract(location(Item,Rm)),
 	assert(location(Item,inventory)),
-	format('You pick up ~s.', [ObjNm]).
+	format('You pick up ~s.', [ObjNm]),
+	etick.
 % "get" with target that isn't an item
 printget(ShortName) :-
 	% check that this is some non-item object
@@ -107,7 +109,8 @@ printdrop(ShortName) :-
 	!,
 	retract(location(Item,inventory)),
 	assert(location(Item,Rm)),
-	format('You drop ~s.',[ObjNm]).
+	format('You drop ~s.',[ObjNm]),
+	etick.
 % "drop" with target that the player isn't carrying
 printdrop(ShortName) :-
 	format('You aren\'t carrying any ~s.',[ShortName]).
@@ -130,17 +133,18 @@ printlook(ShortName) :-
 	member(ShortName,ShortNames),
 	% make sure object is in inventory or same room as player
 	location(player,Rm),
-	location(Obj,Rm),
+	(location(Obj,Rm); location(Obj,inventory)),
 	!,
 	format('This is ~s.~n~s', [ObjNm, ObjDesc]).
 % "look" with unknown target or target not in room
 printlook(Obj) :-
 	format('You can\'t see any ~s.', [Obj]).
 
-% "wait"
+% "wait" - spend a turn doing nothing.
 printwait :-
 	writeln('You wait around.'),
-	tick.
+	etick.
+printwait(_) :- printwait.
 
 % "inventory" - list all items in your inventory.
 printinv :-
@@ -151,6 +155,13 @@ printinv :-
 	getobjects(inventory).
 printinv :-
 	writeln('You are not carrying anything.').
+printinv(_) :- printinv.
+
+% "status" - show turn count and score (santa part totals)
+printstatus :-
+	timer(global,T),
+	format('You have taken ~d turns and collected [SANTACOUNT] santa parts.', [T]).
+printstatus(_) :- printstatus.
 
 % "help" with no target - general help/commands
 printhelp :-
@@ -181,9 +192,11 @@ printwin :-
 	write("Congratulations! Santa has been restored and you have saved Christmas!").
 printwin :-
 	write("You do not have all of the components needed to save Christmas.").
+printwin(_) :- printwin.
 quit :- running(true),
 	write("You quit."),
 	retract(running(true)).
+quit(_) :- quit.
 
 % List all available exits from the specified room.
 getexits(Rm) :-
@@ -235,7 +248,6 @@ parse([H|T]) :-
 	H = '',
 	parse(T).
 parse([LVb|LTgt]) :-
-	writeln(LVb), writeln(LTgt),
 	% try to match a verb
 	verb(Vb,VbNames,_),
 	member(LVb,VbNames),
@@ -243,6 +255,7 @@ parse([LVb|LTgt]) :-
 	first(LTgt,Tgt),
 	buildcall(Vb,Tgt).
 % no verb matches - interpret this as a "go"
+% TODO: can be done better
 parse([LTgt]) :-
 	printgo(LTgt).
 
@@ -253,7 +266,9 @@ buildcall(Vb,Tgt) :-
 buildcall(Vb,Tgt) :-
 	call(Vb,Tgt).
 
-% Increment all active timers.
+% Increment all active timers. Every verb that would take time to perform should call this.
+% TODO: anything that acts autonomously should act here;
+% e.g. actors moving around, objects changing attributes when you pick them up
 etick :-
 	timer(N,T),
 	Tn is T+1,
@@ -269,6 +284,7 @@ start :-
 	main1.
 
 first([X|_], X).
+first([], []).
 
 % an example
 
@@ -334,6 +350,8 @@ verb(printwait,['wait','z'],
 "Do nothing for a moment.").
 verb(printinv,['inventory','items','i'],
 "See what items you are carrying.").
+verb(printstatus,['status','stat','diagnose'],
+"See how you're doing so far.").
 verb(quit,['quit', 'stop', 'end'],
 "End the game.").
 
