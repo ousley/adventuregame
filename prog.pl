@@ -222,8 +222,9 @@ printlist([H|T]) :-
 %%% Main parsing stuff
 
 % Main loop - read user input, parse it into a verb and target, run the command.
-main :-
+main1 :-
 	repeat,
+
 	getsentence(Line),
 	%writeln(Line),
 	parse(Line),
@@ -253,7 +254,7 @@ buildcall(Vb,Tgt) :-
 	call(Vb,Tgt).
 
 % Increment all active timers.
-tick :-
+etick :-
 	timer(N,T),
 	Tn is T+1,
 	retract(timer(N,T)),
@@ -265,7 +266,7 @@ start :-
 	writeln("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
 	printlook,
-	main.
+	main1.
 
 first([X|_], X).
 
@@ -318,7 +319,7 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(office,streetCorner,out).
 
-verb(printgo,['go','walk','g'],
+verb(printgo,['go','walk',"move",'g'],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
 verb(printget,['get','pickup','take'],
 "Pick something up. Use without a target to see everything you can pick up.").
