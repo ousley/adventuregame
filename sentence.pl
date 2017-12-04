@@ -4,8 +4,12 @@
 
 getsentence(Words, In, Out) :-
    get0(C),
+%split on periods
    ((C = 46, name(W, In), append(Words,[W],Out), !); 
-    (C = 32, name(W, In), append(Words,[W],Words1), getsentence(Words1, [], Out));
+%break on spaces
+    (C = 32, name(W, In), append(Words,[W],Words1), getsentence(Words1, [], Out), !);
+%break on newlines
+    (C = 10, name(W, In), append(Words,[W],Words2), getsentence(Words2, [], Out), !);
     append(In,[C],In1), getsentence(Words, In1,Out)).
 
 getsentence(Words) :-

@@ -36,6 +36,8 @@
 % something that ticks once for every turn the player takes.
 % timer(Name,Count)
 :- dynamic timer/2.
+%keep track of whether or not the game is still running
+:- dynamic running/1.
 
 %%% Primary verb actions
 
@@ -70,8 +72,7 @@ printget :-
 printget(ShortName) :-
 	% check that this is the name of an item
 	object(Item,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	item(Item),
 	% make sure item is in same room as player
 	location(player,Rm),
@@ -85,8 +86,7 @@ printget(ShortName) :-
 printget(ShortName) :-
 	% check that this is some non-item object
 	object(Obj,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
@@ -101,8 +101,7 @@ printdrop :-
 % "drop" with target - move item from inventory to the room the player is in.
 printdrop(ShortName) :-
 	object(Item,ShortNames,ObjNm,_),
-	name(ShortName,StrItem),
-	member(StrItem,ShortNames),
+	member(ShortName,ShortNames),
 	location(Item, inventory),
 	location(player,Rm),
 	!,
@@ -128,9 +127,8 @@ printlook :-
 printlook(ShortName) :-
 	% check all alternate object names
 	object(Obj,ShortNames,ObjNm,ObjDesc),
-	name(ShortName,StrObj),
-	member(StrObj,ShortNames),
-	% make sure object is in same room as player
+	member(ShortName,ShortNames),
+	% make sure object is in inventory or same room as player
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
@@ -163,8 +161,7 @@ printhelp :-
 printhelp(Vb) :-
 	% check all alternate verb names for a match
 	verb(_,VbNames,VbHelp),
-	name(Vb,StrVb),
-	member(StrVb,VbNames),
+	member(Vb,VbNames),
 	!,
 	% list help text and alternate verb names
 	format('~s~nTo use this command, you can type:~n', [VbHelp]),
@@ -185,6 +182,9 @@ printwin :-
 	write("Congratulations! Santa has been restored and you have saved Christmas!").
 printwin :-
 	write("You do not have all of the components needed to save Christmas.").
+quit :- running(X),
+	X = true,
+	retract(running(true)).
 
 % List all available exits from the specified room.
 getexits(Rm) :-
@@ -222,39 +222,38 @@ printlist([H|T]) :-
 
 %%% Main parsing stuff
 
-main :-
+main1 :-
 	repeat,
-	display("Hi"),
-	read(Line),
-	write(Line),
-
+	running(true),
+	getsentence(A),
+	write(A),
+	verb(Action,Synonyms,_),
+	member(A,Synonyms),
+	call(Action),
 	fail.
 
 start :-
-	write("Welcome to the best game ever made!"),
+write("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	nl,
-	main.
-
-splitline(Line,Vb,Tgt) :-
-	append(Vb,Tgt,Line).
+	assert(running(true)),
+	main1.
 
 % an example
 
 room(streetCorner, "a street corner").
 room(office, "a dingy office").
 
-
-object(player,["you","yourself","me","myself","self"], "you",
+object(player,['you','yourself','me','myself','self'], "you",
 "You turn your gaze inward and do a little soul searching.").
-object(streetlamp,["streetlamp","streetlight","lamp","light","lamppost"],"a street lamp",
+object(streetlamp,['streetlamp','streetlight','lamp','light','lamppost'],"a street lamp",
 "An old-timey street lamp, little more than a wrought-iron lantern on a post. The light flickers a little.").
-object(jacketMan,["man"],"a man in a black jacket",
+object(jacketMan,['man'],"a man in a black jacket",
 "A shady-looking guy wearing a black leather jacket and dark sunglasses. Because you can't tell where he's looking, you can't help but feel like he's watching you.").
-object(paperFolded,["paper"],"a folded scrap of paper",
+object(paperFolded,['paper'],"a folded scrap of paper",
 "A tattered piece of paper. It is hastily folded up, but there seems to be writing on it.").
-object(paperUnfolded,["paper"],"a scrap of paper",
+object(paperUnfolded,['paper'],"a scrap of paper",
 "A tattered piece of paper. It reads, \"the quick brown fox.\"").
-object(statue,["statue","sculpture"],"a marble statue",
+object(statue,['statue','sculpture'],"a marble statue",
 "A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
 
 %SANTA CLAUS OBJECTS
@@ -288,30 +287,32 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(office,streetCorner,out).
 
-verb(printgo,["go","walk","g"],
+verb(printgo,['go','walk','g'],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
-verb(printget,["get","pick up","take"],
+verb(printget,['get','pickup','take'],
 "Pick something up. Use without a target to see everything you can pick up.").
-verb(printdrop,["drop","put down"],
+verb(printdrop,['drop','putdown'],
 "Put something down.").
-verb(printhelp,["help","?"],
+verb(printhelp,['help','?'],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
-verb(printlook,["look","look at","examine","describe","l"],
+verb(printlook,['look','lookat','examine','describe','l'],
 "Examine something in more detail. Use without a target to size up everything in the area.").
 verb(printwin,["rebuild","rebuild santa", "heal santa", "fix santa","restore","fix"],"Once you have collected all of Santa's components, you will win the game!").
+verb(printwait,['wait','z'],
+"Do nothing for a moment. Use with a number to wait for that many moments.").
+verb(printinv,['inventory','items','i'],
+"See what items you are carrying.").
+verb(quit,["quit", "stop", "end"],
+"End the game.").
+
 
 %UNIMPLEMENTED
-verb(wear,["wear","equip","put on"],
+verb(printwear,['wear','equip','puton'],
 "Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
-verb(remove,["remove","take off","unwear"],
+verb(printremove,['remove','takeoff','unwear'],
 "Remove an article you are wearing. Use without a target to see everything you are wearing.").
-
-verb(talk,["talk","speak","talk to","speak to","t"],
+verb(printtalk,['talk','speak','talkto','speakto','t'],
 "Have a conversation with someone or something. Use without a target to see everyone and everything you can talk to.").
-verb(wait,["wait","z"],
-"Do nothing for a moment. Use with a number to wait for that many moments.").
-verb(printinv,["inventory","items","i"],
-"See what items you are carrying.").
 
 timer(global,0).
 
