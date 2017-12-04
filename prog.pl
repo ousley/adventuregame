@@ -36,6 +36,8 @@
 % something that ticks once for every turn the player takes.
 % timer(Name,Count)
 :- dynamic timer/2.
+%keep track of whether or not the game is still running
+:- dynamic running/1.
 
 %%% Primary verb actions
 
@@ -167,7 +169,21 @@ printhelp(Vb) :-
 printhelp(_) :-
 	writeln('I don\'t know that command.').
 
+%Check if the player has once the game
+
 %%% Helper Predicates
+printwin :-
+	location(santaHead,inventory),
+	location(santaLegs,inventory),
+	location(santaArms,inventory),
+	location(santaBody,inventory),
+	location(santaOutfit,inventory),
+	write("Congratulations! Santa has been restored and you have saved Christmas!").
+printwin :-
+	write("You do not have all of the components needed to save Christmas.").
+quit :- running(X),
+	X = true,
+	retract(running(true)).
 
 % List all available exits from the specified room.
 getexits(Rm) :-
@@ -245,7 +261,9 @@ tick :-
 
 % The player runs this to start the game, printing introductory stuff and starting the main loop.
 start :-
-	writeln('Welcome to the best game ever made!'),
+<<<<<<< HEAD
+	assert(running(true)),
+	writeln("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
 	printlook,
 	main.
@@ -270,8 +288,21 @@ object(paperUnfolded,['paper'],"a scrap of paper",
 object(statue,['statue','sculpture'],"a marble statue",
 "A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
 
+%SANTA CLAUS OBJECTS
+object(santaHead,['head','santahead'], "Santa...does not look well...").
+object(santaLegs,['legs','leg','santalegs', 'santaleg'],"the legs of Santa himself...").
+object(santaArms,['arms','santaarms','santaarm','arm'],"Santa needs these to deliver his presents...").
+object(santaBody,['body', 'torso', 'santabody', 'santatorso'], "this must be where he keeps his cookies...").
+object(santaOutfit,['coat','santacoat,'pants','santapants'],"without his uniform, Santa is just a big jolly creep...").
+object(rudolph,['reindeer','rudolph'],"Rudolph lies on the asphault. He is not breathing.").
+
 item(paperFolded).
 item(paperUnfolded).
+item(santaHead).
+item(santaLegs).
+item(santaArms).
+item(santaBody).
+item(santaOutfit).
 
 talker(player).
 talker(jacketMan).
@@ -298,10 +329,15 @@ verb(printhelp,['help','?'],
 "Get basic help on how to use a command. Use without any commands to get a list of all available commands.").
 verb(printlook,['look','lookat','examine','describe','l'],
 "Examine something in more detail. Use without a target to size up everything in the area.").
+verb(printwin,['rebuild', 'heal', 'fix','restore'],"Once you have collected all of Santa's components, you will win the game!").
 verb(printwait,['wait','z'],
 "Do nothing for a moment.").
 verb(printinv,['inventory','items','i'],
 "See what items you are carrying.").
+verb(quit,['quit', 'stop', 'end'],
+"End the game.").
+
+
 %UNIMPLEMENTED
 verb(printwear,['wear','equip','puton'],
 "Put on a piece of clothing, jewelry, or other wearable item. Use without a target to see everything you can wear.").
