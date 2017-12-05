@@ -86,7 +86,7 @@ printget(ShortName) :-
 	format('You pick up ~s.~n', [ObjNm]),
 	% cut so we only pick up one item at a time if there are duplicates
 	!,
-	etick.
+	etick, !.
 % "get" with target that isn't an item
 printget(ShortName) :-
 	% check that this is some non-item object
@@ -115,7 +115,7 @@ printdrop(ShortName) :-
 	% cut so we only drop one item at a time if there are duplicates
 	!,
 	format('You drop ~s.~n',[ObjNm]),
-	etick.
+	etick, !.
 % "drop" with target that the player isn't carrying
 printdrop(ShortName) :-
 	format('You aren\'t carrying any ~s.~n',[ShortName]).
@@ -148,7 +148,7 @@ printlook(Obj) :-
 % "wait" - spend a turn doing nothing.
 printwait :-
 	writeln('You wait around.'),
-	etick.
+	etick, !.
 printwait(_) :- printwait.
 
 % "inventory" - list all items in your inventory.
@@ -223,6 +223,7 @@ getobjects(Rm) :-
 	location(Obj,Rm),
 	format('* ~s~n',[ObjName]),
 	fail.
+getobjects(_).
 
 % ... of a particular type (e.g. item).
 getobjects(Rm,Type) :-
