@@ -39,6 +39,9 @@
 :- dynamic timer/2.
 %keep track of whether or not the game is still running
 :- dynamic running/1.
+%keep track of santa part progress
+:- dynamic progress/1.
+
 
 %%% Primary verb actions
 
@@ -94,6 +97,9 @@ printget(ShortName) :-
 	member(ShortName,ShortNames),
 	location(player,Rm),
 	location(Obj,Rm),
+	retract(progress(X)),
+	assert(progress(Y)),
+	Y is X + 20,
 	!,
 	format('~s isn\'t something you can carry.~n', [ObjNm]).
 % "get" with unknown target
@@ -112,6 +118,10 @@ printdrop(ShortName) :-
 	!,
 	retract(location(Item,inventory)),
 	assert(location(Item,Rm)),
+	retract(progress(X)),
+	assert(progress(Y)),
+	Y is X + 20,
+
 	% cut so we only drop one item at a time if there are duplicates
 	!,
 	format('You drop ~s.~n',[ObjNm]),
@@ -165,7 +175,8 @@ printinv(_) :- printinv.
 % "status" - show turn count and score (santa part totals)
 printstatus :-
 	timer(global,T),
-	format('You have taken ~d turns and collected [SANTACOUNT] santa parts.~n', [T]).
+	progress(P),
+	format('You have taken ~d turns and collected ~d percent of santa parts.', [T]).
 printstatus(_) :- printstatus.
 
 % "help" with no target - general help/commands
@@ -298,6 +309,7 @@ etick :-
 % The player runs this to start the game, printing introductory stuff and starting the main loop.
 start :-
 	assert(running(true)),
+	assert(progress(0)),
 	writeln("It is Christmas Eve, 2017. The boys and girls of planet Earth sleep soundly in their homes, unaware of the trajedy that has occured. Santa Claus has been in a terrible sleigh accident. So bad, in fact, that the very body parts that compose him have been scattered across New York City. Hurry. Find Santa's parts. Once you have them, quickly rebuild him so that he can finish delivering presents. Should you fail to complete this task in 2 hours (20 turns), Christmas will be ruined. Make haste."),
 	writeln('Type commands as "verb target." (including period) and type "help." for help.'),
 	printlook;
