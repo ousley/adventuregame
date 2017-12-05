@@ -19,6 +19,7 @@
 :- dynamic location/2.
 
 % exits, their destinations, and how to get to them
+% ** to make a two-way path, an exit in one room should lead to the other and vice versa
 % would they be defined as objects? e.g. you could have an exit door close off
 % but the doorway remain in the world
 % exit(From,To,Direction)
@@ -82,7 +83,9 @@ printget(ShortName) :-
 	% move item to inventory
 	retract(location(Item,Rm)),
 	assert(location(Item,inventory)),
-	format('You pick up ~s.', [ObjNm]),
+	format('You pick up ~s.~n', [ObjNm]),
+	% cut so we only pick up one item at a time if there are duplicates
+	!,
 	etick.
 % "get" with target that isn't an item
 printget(ShortName) :-
@@ -92,10 +95,10 @@ printget(ShortName) :-
 	location(player,Rm),
 	location(Obj,Rm),
 	!,
-	format('~s isn\'t something you can carry.', [ObjNm]).
+	format('~s isn\'t something you can carry.~n', [ObjNm]).
 % "get" with unknown target
 printget(ShortName) :-
-	format('There is no ~s here that you can get.',[ShortName]).
+	format('There is no ~s here that you can get.~n',[ShortName]).
 
 % "drop" with no target
 printdrop :-
@@ -109,11 +112,13 @@ printdrop(ShortName) :-
 	!,
 	retract(location(Item,inventory)),
 	assert(location(Item,Rm)),
-	format('You drop ~s.',[ObjNm]),
+	% cut so we only drop one item at a time if there are duplicates
+	!,
+	format('You drop ~s.~n',[ObjNm]),
 	etick.
 % "drop" with target that the player isn't carrying
 printdrop(ShortName) :-
-	format('You aren\'t carrying any ~s.',[ShortName]).
+	format('You aren\'t carrying any ~s.~n',[ShortName]).
 
 % "look" with no target - list all objects in the same room as the player.
 printlook :-
@@ -135,10 +140,10 @@ printlook(ShortName) :-
 	location(player,Rm),
 	(location(Obj,Rm); location(Obj,inventory)),
 	!,
-	format('This is ~s.~n~s', [ObjNm, ObjDesc]).
+	format('This is ~s.~n~s~n', [ObjNm, ObjDesc]).
 % "look" with unknown target or target not in room
 printlook(Obj) :-
-	format('You can\'t see any ~s.', [Obj]).
+	format('You can\'t see any ~s.~n', [Obj]).
 
 % "wait" - spend a turn doing nothing.
 printwait :-
@@ -160,7 +165,7 @@ printinv(_) :- printinv.
 % "status" - show turn count and score (santa part totals)
 printstatus :-
 	timer(global,T),
-	format('You have taken ~d turns and collected [SANTACOUNT] santa parts.', [T]).
+	format('You have taken ~d turns and collected [SANTACOUNT] santa parts.~n', [T]).
 printstatus(_) :- printstatus.
 
 % "help" with no target - general help/commands
@@ -180,29 +185,37 @@ printhelp(Vb) :-
 printhelp(_) :-
 	writeln('I don\'t know that command.').
 
-%Check if the player has once the game
-
-%%% Helper Predicates
+%Check if the player has won the game
 printwin :-
 	location(santaHead,inventory),
 	location(santaLegs,inventory),
 	location(santaArms,inventory),
 	location(santaBody,inventory),
 	location(santaOutfit,inventory),
-	write("Congratulations! Santa has been restored and you have saved Christmas!").
+	writeln("Congratulations! Santa has been restored and you have saved Christmas!").
 printwin :-
-	write("You do not have all of the components needed to save Christmas.").
+	writeln("You do not have all of the components needed to save Christmas.").
 printwin(_) :- printwin.
+
+% Quit the game.
+% TODO: does not work
 quit :- running(true),
-	write("You quit."),
+	writeln("You quit."),
 	retract(running(true)).
 quit(_) :- quit.
+
+%%% Helper Predicates
+
+% Get the first element in a list. Used to truncate user input.
+first([X|_], X).
+first([], []).
 
 % List all available exits from the specified room.
 getexits(Rm) :-
 	exit(Rm,Ex,ExDir),
 	room(Ex,ExDesc),
-	format('* ~s to ~s',[ExDir,ExDesc]).
+	format('* ~s to ~s~n',[ExDir,ExDesc]),
+	fail.
 
 % List all objects in a room.
 getobjects(Rm) :-
@@ -237,11 +250,17 @@ printlist([H|T]) :-
 % Main loop - read user input, parse it into a verb and target, run the command.
 main1 :-
 	repeat,
-	running(true),
-	getsentence(Line),
-	%writeln(Line),
-	parse(Line),
-	fail.
+	% if
+	(running(true) ->
+	% then
+		getsentence(Line),
+		parse(Line),
+		% loop back to main1
+		fail;
+	% else
+		% cut and don't loop
+		!
+	).
 
 % hack to trim leading empty atoms
 parse([H|T]) :-
@@ -283,12 +302,10 @@ start :-
 	printlook;
 	main1.
 
-first([X|_], X).
-first([], []).
-
 % an example
 
 room(streetCorner, "a street corner").
+room(bealeSt, "an east/west street").
 room(office, "a dingy office").
 
 object(player,['you','yourself','me','myself','self'], "you",
@@ -333,6 +350,7 @@ exit(streetCorner,bealeSt,east).
 exit(streetCorner,parkAve,south).
 exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
+exit(bealeSt, streetCorner, west).
 exit(office,streetCorner,out).
 
 verb(printgo,['go','walk',"move",'g'],
