@@ -191,7 +191,7 @@ printwin :-
 	location(santaLegs,inventory),
 	location(santaArms,inventory),
 	location(santaBody,inventory),
-	location(santaOutfit,inventory),
+	location(santaOutfit,inventory),!,
 	writeln("Congratulations! Santa has been restored and you have saved Christmas!").
 printwin :-
 	writeln("You do not have all of the components needed to save Christmas.").
@@ -302,11 +302,7 @@ start :-
 	printlook;
 	main1.
 
-% an example
 
-room(streetCorner, "a street corner").
-room(bealeSt, "an east/west street").
-room(office, "a dingy office").
 
 object(player,['you','yourself','me','myself','self'], "you",
 "You turn your gaze inward and do a little soul searching.").
@@ -318,16 +314,26 @@ object(paperFolded,['paper'],"a folded scrap of paper",
 "A tattered piece of paper. It is hastily folded up, but there seems to be writing on it.").
 object(paperUnfolded,['paper'],"a scrap of paper",
 "A tattered piece of paper. It reads, \"the quick brown fox.\"").
-object(statue,['statue','sculpture'],"a marble statue",
-"A large marble statue of...something. From one angle it looks like a woman, but from another it looks more like an elephant. Pondering this gives you a headache.").
+
+object(fossil,['fossil','dinosaur','skeleton','trex','t-rex'],"a giant fossil","The skeleton of a massive T-Rex stands before you.").
+object(tiger,['tiger'],"a fierce tiger","You see a tiger eating something. You look in closer. Oh no...not Prancer!").
+object(painting,['art','painting'],"a painting","This painting is of a man riding a unicorn.").
+object(sleigh,['sleigh','santas sleigh'],"a mangled sleigh", "This must be where the crash occured. Ironic.").
+object(performers,['performers','dancers'],"a group of performers", "A group of people dressed as elves sing Jingle Bells.").
+object(bum,['bum','homeless man'],"a bum", "A bum lies on the street in tears. Only the revival of Santa can cheer him up.").
+object(tree,['christmas tree','tree'],"a christmas tree","Ah, the famous Rockefeller Center Christmas Tree. You have a hard time enjoying it, knowing that this may be the last time it is ever erected...").
+object(deer,['deer','reindeer','Cupid'], "an injured reindeer", "You see a reindeer limping across an intersection. ").
+object(elves,['elves','elf'], "frantic elves", "A group of elves scurry around the sidewalk, gathering presents that were scattered during the crash.").
+
+
 
 %SANTA CLAUS OBJECTS
-object(santaHead,['head','santahead'], "Santa...does not look well...").
-object(santaLegs,['legs','leg','santalegs', 'santaleg'],"the legs of Santa himself...").
-object(santaArms,['arms','santaarms','santaarm','arm'],"Santa needs these to deliver his presents...").
-object(santaBody,['body', 'torso', 'santabody', 'santatorso'], "this must be where he keeps his cookies...").
-object(santaOutfit,['coat','santacoat','pants','santapants'],"without his uniform, Santa is just a big jolly creep...").
-object(rudolph,['reindeer','rudolph'],"Rudolph lies on the asphault. He is not breathing.").
+object(santaHead,['head','santahead'],"santa's head", "Santa...does not look well...").
+object(santaLegs,['legs','leg','santalegs', 'santaleg'],"a pair of Santa legs","the legs of Santa himself...").
+object(santaArms,['arms','santaarms','santaarm','arm'],"a pair of Santa arms","Santa needs these to deliver his presents...").
+object(santaBody,['body', 'torso', 'santabody', 'santatorso'],"the body of Santa", "this must be where he keeps his cookies...").
+object(santaOutfit,['coat','santacoat','pants','santapants','outfit','uniform'],"Santa's uniform and hat","without his uniform, Santa is just a big jolly creep...").
+object(rudolph,['reindeer','rudolph'],"Rudolph lies on the asphault. He is not breathing. His noses flickers a few times and then fades to black.").
 
 item(paperFolded).
 item(paperUnfolded).
@@ -339,12 +345,55 @@ item(santaOutfit).
 
 talker(player).
 talker(jacketMan).
-
-location(player,streetCorner).
 location(streetlamp,streetCorner).
 location(jacketMan,streetCorner).
 location(paperFolded,streetCorner).
 location(statue,office).
+
+
+
+%New York Items
+location(player,centralPark).
+location(fossil,americanNatHistory).
+location(tiger,centralParkZoo).
+location(painting,metropolitanMuseum).
+location(painting,museumModernArt).
+location(performers,timesSquare).
+location(sleigh,cathedral).
+location(bum,empireState).
+location(tree,rockefellerCtr).
+location(santaArms,centralPark).
+location(santaLegs,empireState).
+location(santaBody,cathedral).
+location(rudolph,rockefellerCtr).
+location(santaOutfit,timesSquare).
+location(santaHead,littleItaly).
+location(deer, centralPark).
+location(elves,timesSquare).
+
+
+% an example
+
+room(streetCorner, "a street corner").
+room(bealeSt, "an east/west street").
+room(office, "a dingy office").
+
+%New York City
+room(centralPark, "Central Park").
+room(americanNatHistory, "the American Natural History Museum").
+room(centralParkZoo, "the Central Park Zoo").
+room(metropolitanMuseum, "the Metropolitan Museum of Art").
+room(museumModernArt, "the Museum of Modern Art").
+room(carnegieHall, "Carnegie Hall").
+room(cathedral, "St. Patrick's Cathedral").
+room(radioCityMH,"Radio City Music Hall").
+room(timesSquare, "Times Square").
+room(rockefellerCtr, "Rockefeller Center").
+room(empireState, "the Empire State Building").
+room(unionSquare, "Union Square").
+room(littleItaly, "Little Italy").
+
+
 
 exit(streetCorner,bealeSt,east).
 exit(streetCorner,parkAve,south).
@@ -352,6 +401,37 @@ exit(streetCorner,sewer,down).
 exit(streetCorner,office,in).
 exit(bealeSt, streetCorner, west).
 exit(office,streetCorner,out).
+
+%New York Paths
+exit(centralPark,americanNatHistory,west).
+exit(centralPark,metropolitanMuseum,east).
+exit(centralPark,centralParkZoo,south).
+exit(centralParkZoo,centralPark,north).
+exit(centralParkZoo,museumModernArt,south).
+exit(americanNatHistory,centralPark,east).
+exit(metropolitanMuseum,centralPark,west).
+exit(americanNatHistory,carnegieHall,south).
+exit(carnegieHall,americanNatHistory,north).
+exit(carnegieHall,museumModernArt,east).
+exit(museumModernArt,centralParkZoo,north).
+exit(museumModernArt,carnegieHall,west).
+exit(museumModernArt,cathedral,south).
+exit(cathedral,museumModernArt,north).
+exit(cathedral,radioCityMH,west).
+exit(radioCityMH,cathedral,east).
+exit(radioCityMH,timesSquare,south).
+exit(timesSquare,radioCityMH,north).
+exit(cathedral,rockefellerCtr,south).
+exit(rockefellerCtr,cathedral,north).
+exit(rockefellerCtr,empireState,south).
+exit(timesSquare,empireState,east).
+exit(empireState,timesSquare,west).
+exit(empireState,rockefellerCtr,north).
+exit(empireState,unionSquare,south).
+exit(unionSquare,empireState,north).
+exit(unionSquare,littleItaly,east).
+exit(littleItaly,unionSquare,west).
+
 
 verb(printgo,['go','walk',"move",'g'],
 "Move to a different room or area. Use without a direction to see all the places you can go and how to get to them.").
